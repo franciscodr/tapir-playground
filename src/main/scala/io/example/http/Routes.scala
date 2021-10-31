@@ -14,7 +14,7 @@ import sttp.tapir.server.ServerEndpoint
 import sttp.tapir.server.http4s.Http4sServerInterpreter
 import sttp.tapir.server.interceptor.ValuedEndpointOutput
 import sttp.tapir.server.interceptor.exception.{ExceptionContext, ExceptionHandler}
-import sttp.tapir.swagger.http4s.SwaggerHttp4s
+import sttp.tapir.swagger.SwaggerUI
 import sttp.tapir.{statusCode, stringBody}
 
 object ServiceExceptionHandler extends ExceptionHandler {
@@ -35,7 +35,7 @@ class Routes[F[_]: Async](greetingService: GreetingService[F], userService: User
       }
     )
 
-  def swaggerRoutes: HttpRoutes[F] = new SwaggerHttp4s(OpenAPI.yamlContent).routes
+  def swaggerRoutes: HttpRoutes[F] = Http4sServerInterpreter().toRoutes(SwaggerUI[F](OpenAPI.yamlContent))
 
   def routes: HttpRoutes[F] =
     Http4sServerInterpreter().toRoutes(List(helloWorldRoute, getUserByHandleRoute)) <+>
