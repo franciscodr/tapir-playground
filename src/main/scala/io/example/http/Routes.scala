@@ -19,7 +19,9 @@ import sttp.tapir.{statusCode, stringBody}
 
 object ServiceExceptionHandler extends ExceptionHandler {
   override def apply(ctx: ExceptionContext): Option[ValuedEndpointOutput[_]] =
-    Some(ValuedEndpointOutput(statusCode.and(stringBody), (StatusCode.InternalServerError, "BOOM!")))
+    Some(
+      ValuedEndpointOutput(statusCode.and(stringBody), (StatusCode.InternalServerError, "BOOM!"))
+    )
 }
 
 class Routes[F[_]: Async](greetingService: GreetingService[F], userService: UserService[F]) {
@@ -29,13 +31,18 @@ class Routes[F[_]: Async](greetingService: GreetingService[F], userService: User
 
   def getUserByHandleRoute: ServerEndpoint[String, UserError, UserResponse, Any, F] =
     Endpoints.getUserByHandle.serverLogic(handle =>
-      userService.getUserByHandle(handle).map(UserResponse.fromUser).map(_.asRight[UserError]).handleError {
-        case e: UserHandleNotValid => e.asLeft[UserResponse]
-        case e: UserNotFound => e.asLeft[UserResponse]
-      }
+      userService
+        .getUserByHandle(handle)
+        .map(UserResponse.fromUser(_).asRight[UserError])
+        .handleError {
+          case e: UserHandleNotValid => e.asLeft[UserResponse]
+          case e: UserNotFound => e.asLeft[UserResponse]
+          case _ => UnexpectedError.asLeft[UserResponse]
+        }
     )
 
-  def swaggerRoutes: HttpRoutes[F] = Http4sServerInterpreter().toRoutes(SwaggerUI[F](OpenAPI.yamlContent))
+  def swaggerRoutes: HttpRoutes[F] =
+    Http4sServerInterpreter().toRoutes(SwaggerUI[F](OpenAPI.yamlContent))
 
   def routes: HttpRoutes[F] =
     Http4sServerInterpreter().toRoutes(List(helloWorldRoute, getUserByHandleRoute)) <+>
@@ -44,5 +51,6 @@ class Routes[F[_]: Async](greetingService: GreetingService[F], userService: User
       } <+>
       swaggerRoutes
 
-  def routesWithErrorHandler: HttpApp[F] = new RoutesWithErrorHandler[F](routes).routesWithErrorHandler.orNotFound
+  def routesWithErrorHandler: HttpApp[F] =
+    new RoutesWithErrorHandler[F](routes).routesWithErrorHandler.orNotFound
 }
