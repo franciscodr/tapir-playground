@@ -17,6 +17,7 @@ lazy val root = (project in file("."))
     scalaVersion := "2.13.6",
     libraryDependencies ++= Seq(
       "ch.qos.logback"               % "logback-classic"          % LogbackVersion,
+      "com.github.pureconfig"       %% "pureconfig"               % PureConfigVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-core"               % TapirVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-json-circe"         % TapirVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-http4s-server"      % TapirVersion,
