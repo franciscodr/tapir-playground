@@ -1,9 +1,6 @@
 name: Publish to Docker Registry
 
 on:
-  push:
-    branches:
-      - publishing-docker-image
   release:
     types: [published]
 
