@@ -37,5 +37,17 @@ lazy val root = (project in file("."))
     ),
     addCompilerPlugin("com.olegpy"   %% "better-monadic-for"    % "0.3.1"),
     addCompilerPlugin("org.typelevel" % "kind-projector_2.13.6" % "0.13.2"),
-    testFrameworks += new TestFramework("munit.Framework")
+    testFrameworks += new TestFramework("munit.Framework"),
+    Docker / packageName := name.value,
+    dockerBaseImage := "openjdk:11-jre-slim-buster",
+    dockerExposedPorts ++= Seq(8080),
+    dockerUpdateLatest := true,
+    dockerAlias := DockerAlias(
+      registryHost = Some("ghcr.io"),
+      username = Some("franciscodr"),
+      name = (Docker / packageName).value,
+      tag = Some("latest")
+    )
   )
+  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(DockerPlugin)
